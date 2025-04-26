@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
@@ -7,7 +8,7 @@ import Results from '@/components/Results';
 import { checkPlagiarism, checkStatus, getResults } from '@/api/plagiarismApi';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Loader } from "lucide-react";
+import { Loader, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
@@ -109,60 +110,74 @@ const Index = () => {
 
       {loading && (
         <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-          <div className="flex flex-col items-center justify-center gap-6 py-8">
-            <div className="relative">
-              {/* Circular progress background */}
-              <div className="w-24 h-24 rounded-full border-4 border-secondary relative">
-                {/* Animated progress circle */}
-                <svg className="absolute inset-0 w-24 h-24 transform -rotate-90">
-                  <circle 
-                    cx="48" 
-                    cy="48" 
-                    r="40" 
-                    fill="transparent"
-                    stroke="currentColor" 
-                    strokeWidth="8"
-                    strokeDasharray={`${2 * Math.PI * 40}`}
-                    strokeDashoffset={`${2 * Math.PI * 40 * (1 - progress/100)}`}
-                    className="text-primary transition-all duration-300"
-                  />
-                </svg>
-                {/* Spinning loader in center */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Loader className="w-8 h-8 animate-spin text-primary" />
-                </div>
+          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-8">
+            <div className="relative w-48 h-48 flex items-center justify-center">
+              {/* Animated Circular Progress */}
+              <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle 
+                  cx="50" 
+                  cy="50" 
+                  r="45" 
+                  fill="transparent"
+                  stroke="currentColor" 
+                  strokeWidth="8"
+                  className="text-secondary/30"
+                />
+                <circle 
+                  cx="50" 
+                  cy="50" 
+                  r="45" 
+                  fill="transparent"
+                  stroke="currentColor" 
+                  strokeWidth="8"
+                  strokeDasharray="283"
+                  strokeDashoffset={`${283 * (1 - progress/100)}`}
+                  className="text-primary transition-all duration-500 ease-in-out"
+                />
+              </svg>
+              
+              {/* Animated Loader Icon */}
+              <div className="absolute inset-0 flex items-center justify-center animate-pulse">
+                <Loader className="w-24 h-24 text-primary/70 animate-spin" />
               </div>
             </div>
 
-            <div className="space-y-2 max-w-md mx-auto">
-              <Collapsible className="w-full">
-                <div className="flex flex-col items-center space-y-2">
-                  <h3 className="text-xl font-medium text-gray-900">{currentStep}</h3>
-                  <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-primary h-full transition-all duration-300 ease-in-out" 
-                      style={{ width: `${progress}%` }} 
-                    />
-                  </div>
-                  <span className="text-sm text-muted-foreground">{progress}% complete</span>
-                </div>
+            <div className="text-center space-y-4 max-w-md">
+              <h3 className="text-2xl font-semibold text-gray-800 animate-fade-in">
+                {currentStep}
+              </h3>
+              
+              <div className="w-full bg-secondary/20 rounded-full h-3 overflow-hidden">
+                <div 
+                  className="bg-primary h-full transition-all duration-300 ease-in-out" 
+                  style={{ width: `${progress}%` }} 
+                />
+              </div>
+              
+              <p className="text-sm text-muted-foreground animate-fade-in">
+                {progress}% complete
+              </p>
 
+              <Collapsible>
                 <CollapsibleTrigger asChild>
-                  <Button variant="link" className="text-sm mt-2">
-                    Show details
+                  <Button variant="outline" size="sm" className="mt-4">
+                    Show Analysis Details
                   </Button>
                 </CollapsibleTrigger>
                 
-                <CollapsibleContent className="mt-2">
-                  <div className="rounded-md bg-secondary/50 p-4 text-sm">
-                    <ToggleGroup type="single" defaultValue="content">
-                      <ToggleGroupItem value="content">Content Analysis</ToggleGroupItem>
-                      <ToggleGroupItem value="sources">Source Matching</ToggleGroupItem>
-                      <ToggleGroupItem value="report">Report Generation</ToggleGroupItem>
-                    </ToggleGroup>
-                    <div className="mt-3 text-left text-muted-foreground">
-                      <p>Our AI is analyzing your content for matching phrases and possible plagiarism across our database of academic papers, websites, and published works.</p>
+                <CollapsibleContent>
+                  <div className="mt-4 p-4 bg-secondary/10 rounded-lg text-left space-y-3 animate-fade-in">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      <span>Content Analysis</span>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                      <span>Source Matching</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Our advanced AI is meticulously analyzing your content across multiple databases.
+                    </p>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
