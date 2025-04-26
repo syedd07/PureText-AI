@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,6 +8,7 @@ import { checkPlagiarism, checkStatus, getResults } from '@/api/plagiarismApi';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Loader } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [loading, setLoading] = useState(false);
