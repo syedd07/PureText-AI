@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Paste, X } from 'lucide-react';
+import { ClipboardPaste, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface TextInputProps {
@@ -68,7 +68,7 @@ const TextInput = ({ onSubmit }: TextInputProps) => {
             className="gap-2"
             onClick={handlePaste}
           >
-            <Paste className="h-4 w-4" />
+            <ClipboardPaste className="h-4 w-4" />
             Paste from Clipboard
           </Button>
           <span className="text-sm text-muted-foreground">
