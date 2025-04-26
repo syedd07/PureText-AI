@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
@@ -46,49 +45,47 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Plagiarism Checker
-          </h1>
-          <p className="text-gray-600">
-            Check your text for plagiarism using our advanced detection tool
-          </p>
-        </div>
-
-        {!loading && !results && (
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <Tabs defaultValue="text" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="text">Check Text</TabsTrigger>
-                <TabsTrigger value="file">Upload File</TabsTrigger>
-              </TabsList>
-              <TabsContent value="text" className="mt-6">
-                <TextInput onSubmit={handleSubmission} />
-              </TabsContent>
-              <TabsContent value="file" className="mt-6">
-                <FileUploader onFileSelect={handleSubmission} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
-
-        {loading && (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-            <p className="text-gray-600">Analyzing your content for plagiarism...</p>
-          </div>
-        )}
-
-        {results && (
-          <Results
-            plagiarismPercentage={results.plagiarismPercentage}
-            matches={results.matches}
-            fullTextWithHighlights={results.fullTextWithHighlights}
-          />
-        )}
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Plagiarism Checker
+        </h1>
+        <p className="text-gray-600">
+          Check your text for plagiarism using our advanced detection tool
+        </p>
       </div>
+
+      {!loading && !results && (
+        <div className="bg-white rounded-lg shadow-sm border">
+          <Tabs defaultValue="text" className="w-full">
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="text">Check Text</TabsTrigger>
+              <TabsTrigger value="file">Upload File</TabsTrigger>
+            </TabsList>
+            <TabsContent value="text" className="p-6">
+              <TextInput onSubmit={handleSubmission} />
+            </TabsContent>
+            <TabsContent value="file" className="p-6">
+              <FileUploader onFileSelect={handleSubmission} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
+
+      {loading && (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-gray-600">Analyzing your content for plagiarism...</p>
+        </div>
+      )}
+
+      {results && (
+        <Results
+          plagiarismPercentage={results.plagiarismPercentage}
+          matches={results.matches}
+          fullTextWithHighlights={results.fullTextWithHighlights}
+        />
+      )}
     </div>
   );
 };
