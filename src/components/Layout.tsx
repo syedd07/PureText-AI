@@ -34,8 +34,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex-1">
           <header className="border-b">
             <div className="flex items-center h-14 px-4 lg:px-6">
-              <Button variant="ghost" size="icon" className="md:hidden">
+              <Button variant="ghost" size="icon" className="md:hidden mr-2">
                 <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle menu</span>
               </Button>
               <h1 className="text-lg font-semibold">Content Checker</h1>
             </div>
