@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import FileUploader from '@/components/FileUploader';
 import TextInput from '@/components/TextInput';
 import Results from '@/components/Results';
-import { checkPlagiarism, checkStatus, getResults } from '@/api/plagiarismApi';
+import { checkPlagiarism, checkStatus, startPlagiarismCheck, getResults } from '@/api/plagiarismApi';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Loader, CheckCircle2, AlertTriangle } from "lucide-react";
@@ -22,37 +21,85 @@ const Index = () => {
     setLoading(true);
     setProgress(0);
     setCurrentStep("initializing");
-    
+
     try {
       // Start animation
       setProgress(10);
       setCurrentStep("Initiating plagiarism check...");
-      
-      const { jobId } = await checkPlagiarism(content);
-      
+
+      // FIX HERE: Properly extract job_id from response
+      const response = await checkPlagiarism(content);
+      console.log("API Response:", response); // Debug log
+
+      // Extract job_id correctly
+      const jobId = response.job_id; // Use the correct property name
+
+      if (!jobId) {
+        throw new Error("No job ID returned from API");
+      }
+
+      console.log("Job ID:", jobId); // Confirm job_id was received
+
       setProgress(30);
       setCurrentStep("Processing content...");
-      
+
       // Poll for status
       const intervalId = setInterval(async () => {
         setProgress(prev => Math.min(prev + 5, 95)); // Gradually increase progress
+
+        const statusResponse = await checkStatus(jobId);
+        const { status } = statusResponse;
+
+        console.log("Current status:", status); // Add debug log
         
-        const { status } = await checkStatus(jobId);
-        
-        if (status === "completed") {
+        if (status === "analyzed") {
+          // Add this block to trigger the plagiarism check when analysis is done
+          clearInterval(intervalId);
+          setCurrentStep("Starting plagiarism detection...");
+          
+          try {
+            // Call the plagiarism check endpoint to start the source matching
+            await startPlagiarismCheck(jobId);
+            
+            // Start polling again for the final completion
+            pollForCompletion(jobId);
+          } catch (error) {
+            console.error("Error starting plagiarism check:", error);
+            setLoading(false);
+            toast({
+              title: "Error",
+              description: "Failed to start plagiarism check. Please try again.",
+              variant: "destructive",
+            });
+          }
+        } else if (status === "completed") {
           clearInterval(intervalId);
           setProgress(95);
           setCurrentStep("Finalizing report...");
-          
+
           setTimeout(async () => {
-            const results = await getResults(jobId);
-            setResults(results);
+            const apiResults = await getResults(jobId);
+            console.log("Raw API results:", apiResults);
+            
+            // Transform snake_case to camelCase
+            const transformedResults = {
+              plagiarismPercentage: apiResults.plagiarism_percentage,
+              matches: apiResults.matches.map(match => ({
+                textSnippet: match.text_snippet,
+                sourceUrl: match.source_url,
+                // Optionally include similarity score if you want to display it
+                similarityScore: match.similarity_score
+              })),
+              fullTextWithHighlights: apiResults.full_text_with_highlights
+            };
+            
+            setResults(transformedResults);
             setLoading(false);
             setProgress(100);
             toast({
               description: "Analysis completed successfully.",
             });
-          }, 800); // Small delay for smoother transition
+          }, 800);
         } else if (status === "failed") {
           clearInterval(intervalId);
           setLoading(false);
@@ -61,15 +108,64 @@ const Index = () => {
             description: "Failed to process your request. Please try again.",
             variant: "destructive",
           });
-        } else {
-          // Update step message based on progress
-          if (progress > 30 && progress <= 60) {
-            setCurrentStep("Analyzing content...");
-          } else if (progress > 60) {
-            setCurrentStep("Matching against sources...");
-          }
         }
       }, 2000);
+
+      // Add this helper function to poll for completion
+      const pollForCompletion = (jobId: string) => {
+        const completionInterval = setInterval(async () => {
+          try {
+            const statusResponse = await checkStatus(jobId);
+            
+            if (statusResponse.status === "completed") {
+              clearInterval(completionInterval);
+              setProgress(95);
+              setCurrentStep("Finalizing report...");
+              
+              setTimeout(async () => {
+                const apiResults = await getResults(jobId);
+                console.log("Raw API results:", apiResults);
+                
+                // Transform snake_case to camelCase
+                const transformedResults = {
+                  plagiarismPercentage: apiResults.plagiarism_percentage,
+                  matches: apiResults.matches.map(match => ({
+                    textSnippet: match.text_snippet,
+                    sourceUrl: match.source_url,
+                    // Optionally include similarity score if you want to display it
+                    similarityScore: match.similarity_score
+                  })),
+                  fullTextWithHighlights: apiResults.full_text_with_highlights
+                };
+                
+                setResults(transformedResults);
+                setLoading(false);
+                setProgress(100);
+                toast({
+                  description: "Analysis completed successfully.",
+                });
+              }, 800);
+            } else if (statusResponse.status === "failed") {
+              clearInterval(completionInterval);
+              setLoading(false);
+              toast({
+                title: "Error",
+                description: "Failed to process your request. Please try again.",
+                variant: "destructive",
+              });
+            }
+          } catch (error) {
+            console.error("Error checking completion status:", error);
+            clearInterval(completionInterval);
+            setLoading(false);
+            toast({
+              title: "Error",
+              description: "An error occurred while checking status.",
+              variant: "destructive",
+            });
+          }
+        }, 2000);
+      };
     } catch (error) {
       setLoading(false);
       toast({
@@ -114,28 +210,28 @@ const Index = () => {
             <div className="relative w-48 h-48 flex items-center justify-center">
               {/* Animated Circular Progress */}
               <svg className="absolute w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle 
-                  cx="50" 
-                  cy="50" 
-                  r="45" 
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="45"
                   fill="transparent"
-                  stroke="currentColor" 
+                  stroke="currentColor"
                   strokeWidth="8"
                   className="text-secondary/30"
                 />
-                <circle 
-                  cx="50" 
-                  cy="50" 
-                  r="45" 
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="45"
                   fill="transparent"
-                  stroke="currentColor" 
+                  stroke="currentColor"
                   strokeWidth="8"
                   strokeDasharray="283"
-                  strokeDashoffset={`${283 * (1 - progress/100)}`}
+                  strokeDashoffset={`${283 * (1 - progress / 100)}`}
                   className="text-primary transition-all duration-500 ease-in-out"
                 />
               </svg>
-              
+
               {/* Animated Loader Icon */}
               <div className="absolute inset-0 flex items-center justify-center animate-pulse">
                 <Loader className="w-24 h-24 text-primary/70 animate-spin" />
@@ -146,14 +242,14 @@ const Index = () => {
               <h3 className="text-2xl font-semibold text-gray-800 animate-fade-in">
                 {currentStep}
               </h3>
-              
+
               <div className="w-full bg-secondary/20 rounded-full h-3 overflow-hidden">
-                <div 
-                  className="bg-primary h-full transition-all duration-300 ease-in-out" 
-                  style={{ width: `${progress}%` }} 
+                <div
+                  className="bg-primary h-full transition-all duration-300 ease-in-out"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
-              
+
               <p className="text-sm text-muted-foreground animate-fade-in">
                 {progress}% complete
               </p>
@@ -164,7 +260,7 @@ const Index = () => {
                     Show Analysis Details
                   </Button>
                 </CollapsibleTrigger>
-                
+
                 <CollapsibleContent>
                   <div className="mt-4 p-4 bg-secondary/10 rounded-lg text-left space-y-3 animate-fade-in">
                     <div className="flex items-center space-x-2">

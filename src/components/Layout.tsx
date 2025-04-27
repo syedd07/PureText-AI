@@ -9,7 +9,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <div className="min-h-screen flex w-full">
         <Sidebar>
           <SidebarHeader className="border-b py-4">
-            <h2 className="px-4 font-semibold">Content Checker</h2>
+            <h2 className="px-4 font-semibold">PureText Ai</h2>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
@@ -27,7 +27,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           </SidebarContent>
           <SidebarFooter className="border-t p-4">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Content Checker
+              © {new Date().getFullYear()} PureText Ai
             </p>
           </SidebarFooter>
         </Sidebar>
@@ -38,7 +38,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
-              <h1 className="text-lg font-semibold">Content Checker</h1>
+              <h1 className="text-lg font-semibold">PureText Ai</h1>
             </div>
           </header>
           <main className="flex-1">{children}</main>
