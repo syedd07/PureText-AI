@@ -1,22 +1,22 @@
 # FastAPI framework
 fastapi==0.95.1
-uvicorn[standard]==0.22.0
-gunicorn==21.2.0
-python-multipart==0.0.18
+uvicorn==0.22.0
+python-multipart==0.0.18  # Needed for file uploads
 
 # Environment variables
 python-dotenv==1.0.0
 
-aiohttp==3.8.4
+# HTTP client
+httpx==0.24.0
 
-# Vector similarity search
-# Replace faiss-cpu with a simpler alternative or use a pre-built wheel
-scikit-learn==1.2.2
+# Core dependencies
 numpy==1.24.3
+sentence-transformers==2.2.2  # Add this - needed for embeddings
+# faiss-cpu==1.7.4  # Add this but with a lightweight version
 
 # Web scraping
 zyte-api==0.4.0
-httpx==0.24.0
 
 # Utilities
 pydantic==1.10.8
+nltk==3.8.1  # Add this - needed for sentence splitting
