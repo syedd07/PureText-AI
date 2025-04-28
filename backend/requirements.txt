@@ -1,6 +1,7 @@
 # FastAPI framework
 fastapi==0.95.1
 uvicorn[standard]==0.22.0
+gunicorn==21.2.0
 python-multipart==0.0.18
 
 # Environment variables

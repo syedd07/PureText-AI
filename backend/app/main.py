@@ -1,8 +1,15 @@
+import logging
+import sys
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api.endpoints import analyze, plagiarism
+
+# Add this at the top
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def create_application() -> FastAPI:
     application = FastAPI(
