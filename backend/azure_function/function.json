@@ -12,7 +12,7 @@
           "put",
           "delete"
         ],
-        "route": "{*route}"
+        "route": "analyze"
       },
       {
         "type": "http",

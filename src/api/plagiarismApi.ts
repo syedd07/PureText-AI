@@ -1,6 +1,8 @@
 import { PlagiarismResponse, StatusResponse, ResultResponse } from '../types/api';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+// const API_BASE_URL = 'https://puretext-api.azurewebsites.net';
+
+const API_BASE_URL = 'https://puretext-api.azurewebsites.net/api';
 
 export const checkPlagiarism = async (content: string | File): Promise<PlagiarismResponse> => {
   if (typeof content === 'string') {
