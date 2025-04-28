@@ -17,7 +17,8 @@ class Settings(BaseSettings):
     DEBUG: bool = True         # Added this field
     
     # CORS settings
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "http://localhost:8080"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", 
+                           "http://localhost:8080", "https://puretextai.netlify.app"]
     
     # API keys
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")

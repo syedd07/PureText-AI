@@ -79,7 +79,7 @@ const Index = () => {
 
           setTimeout(async () => {
             const apiResults = await getResults(jobId);
-            console.log("Raw API results:", apiResults);
+            // console.log("Raw API results:", apiResults);
             
             // Transform snake_case to camelCase
             const transformedResults = {
@@ -124,7 +124,7 @@ const Index = () => {
               
               setTimeout(async () => {
                 const apiResults = await getResults(jobId);
-                console.log("Raw API results:", apiResults);
+                // console.log("Raw API results:", apiResults);
                 
                 // Transform snake_case to camelCase
                 const transformedResults = {
