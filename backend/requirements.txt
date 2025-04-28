@@ -7,10 +7,10 @@ python-multipart==0.0.18
 python-dotenv==1.0.0
 
 aiohttp==3.8.4
-azure-functions==1.14.0
 
 # Vector similarity search
-faiss-cpu==1.7.4
+# Replace faiss-cpu with a simpler alternative or use a pre-built wheel
+scikit-learn==1.2.2
 numpy==1.24.3
 
 # Web scraping
