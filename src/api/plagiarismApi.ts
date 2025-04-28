@@ -1,7 +1,5 @@
 import { PlagiarismResponse, StatusResponse, ResultResponse } from '../types/api';
 
-// const API_BASE_URL = 'https://puretext-api.azurewebsites.net';
-
 const API_BASE_URL = 'https://puretext-api.azurewebsites.net/api';
 
 export const checkPlagiarism = async (content: string | File): Promise<PlagiarismResponse> => {
@@ -75,59 +73,38 @@ export const getResults = async (jobId: string): Promise<ResultResponse> => {
 };
 
 
+// USE THE MOCK IMPLEMENTATION INSTEAD
+/*
+export const checkPlagiarism = async (content: string | File): Promise<PlagiarismResponse> => {
+  // Simulate API call delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return { success: true, jobId: "abc123def" };
+};
 
-//connecting to backend
+export const checkStatus = async (jobId: string): Promise<StatusResponse> => {
+  // Simulate API call delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return { status: "completed" };
+};
 
-// interface PlagiarismResponse {
-//   success: boolean;
-//   jobId: string;
-// }
+export const getResults = async (jobId: string): Promise<ResultResponse> => {
+  // Simulate API call delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return {
+    success: true,
+    plagiarismPercentage: 45,
+    matches: [
+      {
+        textSnippet: "This is an example copied sentence.",
+        sourceUrl: "https://example.com/source1"
+      },
+      {
+        textSnippet: "Another matching phrase from another source.",
+        sourceUrl: "https://example.com/source2"
+      }
+    ],
+    fullTextWithHighlights: "<p>This is <mark>an example copied</mark> sentence but other parts are original.</p>"
+  };
+};
 
-// interface StatusResponse {
-//   status: "processing" | "completed" | "failed";
-// }
-
-// interface Match {
-//   textSnippet: string;
-//   sourceUrl: string;
-// }
-
-// interface ResultResponse {
-//   success: boolean;
-//   plagiarismPercentage: number;
-//   matches: Match[];
-//   fullTextWithHighlights: string;
-// }
-
-// // Simulated API calls with dummy responses
-// export const checkPlagiarism = async (content: string | File): Promise<PlagiarismResponse> => {
-//   // Simulate API call delay
-//   await new Promise(resolve => setTimeout(resolve, 1000));
-//   return { success: true, jobId: "abc123def" };
-// };
-
-// export const checkStatus = async (jobId: string): Promise<StatusResponse> => {
-//   // Simulate API call delay
-//   await new Promise(resolve => setTimeout(resolve, 1000));
-//   return { status: "completed" };
-// };
-
-// export const getResults = async (jobId: string): Promise<ResultResponse> => {
-//   // Simulate API call delay
-//   await new Promise(resolve => setTimeout(resolve, 1000));
-//   return {
-//     success: true,
-//     plagiarismPercentage: 45,
-//     matches: [
-//       {
-//         textSnippet: "This is an example copied sentence.",
-//         sourceUrl: "https://example.com/source1"
-//       },
-//       {
-//         textSnippet: "Another matching phrase from another source.",
-//         sourceUrl: "https://example.com/source2"
-//       }
-//     ],
-//     fullTextWithHighlights: "<p>This is <mark>an example copied</mark> sentence but other parts are original.</p>"
-//   };
-// };
+*/
