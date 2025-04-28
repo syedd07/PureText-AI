@@ -176,6 +176,13 @@ const Index = () => {
     }
   };
 
+  const handleScanAnother = () => {
+    setResults(null);
+    setLoading(false);
+    setProgress(0);
+    setCurrentStep("initializing");
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
@@ -287,6 +294,7 @@ const Index = () => {
           plagiarismPercentage={results.plagiarismPercentage}
           matches={results.matches}
           fullTextWithHighlights={results.fullTextWithHighlights}
+          onScanAnother={handleScanAnother}
         />
       )}
     </div>
