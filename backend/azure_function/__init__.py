@@ -1,7 +1,7 @@
 import azure.functions as func
 import logging
 import json
-from app import app
+from app_proxy import app  # Use proxy import instead
 
 async def main(req: func.HttpRequest) -> func.HttpResponse:
     """
