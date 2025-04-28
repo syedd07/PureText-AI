@@ -1,6 +1,6 @@
 import { PlagiarismResponse, StatusResponse, ResultResponse } from '../types/api';
 
-const API_BASE_URL = 'https://puretext-api.azurewebsites.net';
+const API_BASE_URL = 'https://puretext-ai-445b168ae4bf.herokuapp.com';
 
 export const checkPlagiarism = async (content: string | File): Promise<PlagiarismResponse> => {
   if (typeof content === 'string') {
