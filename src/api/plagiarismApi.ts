@@ -66,6 +66,10 @@ export const getResults = async (jobId: string): Promise<ResultResponse> => {
   const response = await fetch(`${API_BASE_URL}/results/${jobId}`);
   
   if (!response.ok) {
+    // Add better error handling
+    console.error(`Error status: ${response.status}`);
+    const errorText = await response.text();
+    console.error(`Error response: ${errorText}`);
     throw new Error('Failed to get results');
   }
   

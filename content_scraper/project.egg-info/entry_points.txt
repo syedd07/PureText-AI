@@ -1,0 +1,2 @@
+[scrapy]
+settings = content_scraper.settings

@@ -1,0 +1,6 @@
+# scrapinghub.yml
+project: 810155
+stacks:
+  default: scrapy:2.5-py3
+requirements:
+  file: requirements.txt

@@ -1,99 +1,134 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 import numpy as np
+import faiss
 from sentence_transformers import SentenceTransformer
-import os
-import asyncio
-from functools import lru_cache
+import logging
 from app.core.config import settings
 
-# Global model instance (lazy-loaded)
-_model = None
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-@lru_cache(maxsize=1)
-def get_model():
-    """
-    Lazy-load the Sentence Transformer model
-    Returns a singleton instance of the model
-    """
-    global _model
-    if _model is None:
-        print("Loading SBERT model - this may take a moment on first run...")
-        _model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    return _model
+# Global model for embeddings
+_embedding_model = None
 
-async def get_text_embedding(text: str) -> List[float]:
+def get_embedding_model() -> SentenceTransformer:
+    """Get or initialize embedding model"""
+    global _embedding_model
+    if _embedding_model is None:
+        model_name = settings.EMBEDDING_MODEL
+        logger.info(f"Loading embedding model: {model_name}")
+        _embedding_model = SentenceTransformer(model_name)
+    return _embedding_model
+
+def get_text_embeddings(texts: List[str]) -> np.ndarray:
+    """Convert text to embeddings"""
+    model = get_embedding_model()
+    embeddings = model.encode(texts, show_progress_bar=False)
+    return embeddings
+
+def get_text_embedding(text: str) -> np.ndarray:
+    """Convert single text to embedding"""
+    return get_text_embeddings([text])[0]
+
+def create_faiss_index(embeddings: np.ndarray, index_type: str = "flat") -> faiss.Index:
     """
-    Get embeddings for text using Sentence Transformers
+    Create a FAISS index for fast similarity search
     
     Args:
-        text: The text to generate embeddings for
-        
+        embeddings: Matrix of embeddings
+        index_type: Type of index ('flat' for exact, 'ivf' for approximate)
+    
     Returns:
-        A list of floating point numbers representing the text embedding
+        FAISS index
     """
-    try:
-        # Run model inference in a thread pool to avoid blocking
-        model = get_model()
-        loop = asyncio.get_event_loop()
-        embedding = await loop.run_in_executor(None, lambda: model.encode(text, convert_to_numpy=True))
-        
-        # Convert numpy array to list for JSON serialization
-        return embedding.tolist()
-    except Exception as e:
-        print(f"Error generating embedding: {str(e)}")
-        # Return empty embedding in case of error - use model dimension
-        model = get_model()
-        return [0.0] * model.get_sentence_embedding_dimension()
+    dimension = embeddings.shape[1]
+    
+    # Create the appropriate index type
+    if index_type == "flat":
+        # Flat index - exact but slower
+        index = faiss.IndexFlatIP(dimension)  # Inner product = cosine on normalized vecs
+    elif index_type == "ivf":
+        # IVF index - approximate but faster
+        quantizer = faiss.IndexFlatIP(dimension)
+        nlist = min(512, max(64, embeddings.shape[0] // 10))  # Dynamic based on dataset size
+        index = faiss.IndexIVFFlat(quantizer, dimension, nlist, faiss.METRIC_INNER_PRODUCT)
+        index.train(embeddings)
+        index.nprobe = 3  # Number of cells to probe (more = slower but more accurate)
+    else:
+        raise ValueError(f"Unknown index type: {index_type}")
+    
+    # Normalize embeddings for cosine similarity
+    faiss.normalize_L2(embeddings)
+    
+    # Add vectors to the index
+    index.add(embeddings.astype(np.float32))
+    return index
 
-async def get_text_themes(text: str, max_themes: int = 3) -> List[str]:
+def search_similar_vectors(query_embedding: np.ndarray, index: faiss.Index, k: int = 5) -> tuple:
     """
-    Extract themes from text using a rule-based approach
+    Search for similar vectors in the index
     
     Args:
-        text: The text to analyze
-        max_themes: Maximum number of themes to return
-        
+        query_embedding: Query embedding vector
+        index: FAISS index
+        k: Number of results to return
+    
     Returns:
-        List of identified themes
+        Tuple of (distances, indices)
     """
+    # Normalize query for cosine similarity
+    query_embedding_normalized = query_embedding.copy().astype(np.float32)
+    faiss.normalize_L2(query_embedding_normalized.reshape(1, -1))
+    
+    # Search the index
+    distances, indices = index.search(query_embedding_normalized.reshape(1, -1), k)
+    return distances[0], indices[0]
+
+async def get_text_themes(text: str, max_themes: int = 5) -> List[str]:
+    """Extract main themes from text content using embeddings"""
     try:
-        # Since we're not using OpenAI anymore, we'll implement a simple
-        # keyword-based theme extraction approach
+        # Extract key noun phrases
+        import re
+        from collections import Counter
         
-        # Common topics/domains to check against
-        domains = {
-            "technology": ["computer", "software", "hardware", "digital", "tech", "algorithm", "data", "internet"],
-            "science": ["research", "experiment", "scientific", "biology", "physics", "chemistry", "study"],
-            "medicine": ["health", "medical", "disease", "treatment", "patient", "doctor", "clinical"],
-            "business": ["company", "market", "finance", "economic", "investment", "corporate", "startup"],
-            "education": ["school", "student", "learning", "teaching", "academic", "education", "university"],
-            "arts": ["creative", "art", "music", "film", "literature", "design", "culture"],
-            "politics": ["government", "policy", "political", "election", "law", "regulation"],
-            "environment": ["climate", "sustainable", "green", "environmental", "conservation", "ecology"]
-        }
+        # Extract potential themes using simple NLP techniques
+        # 1. Split into sentences
+        sentences = re.split(r'[.!?]', text)
         
-        # Convert text to lowercase for matching
-        lower_text = text.lower()
-        
-        # Count occurrences of domain keywords
-        domain_counts = {}
-        for domain, keywords in domains.items():
-            count = sum(lower_text.count(keyword) for keyword in keywords)
-            if count > 0:
-                domain_counts[domain] = count
-        
-        # Sort domains by count
-        sorted_domains = sorted(domain_counts.items(), key=lambda x: x[1], reverse=True)
-        
-        # Get top themes
-        themes = [domain for domain, count in sorted_domains[:max_themes]]
-        
-        # If no themes found, return general
-        if not themes:
-            return ["general"]
+        # 2. Extract noun phrases (simplified approach)
+        noun_phrases = []
+        for sentence in sentences:
+            # Look for potential noun phrases with adjectives
+            matches = re.findall(r'\b[A-Z][a-z]*(?:\s+[a-z]+){1,3}\b', sentence)
+            noun_phrases.extend(matches)
             
-        return themes
-    except Exception as e:
-        print(f"Error identifying themes: {str(e)}")
-        return ["general"]  # Fallback to a generic theme if error occurs
+            # Also add any capitalized terms (potential named entities)
+            matches = re.findall(r'\b[A-Z][a-z]{2,}\b', sentence)
+            noun_phrases.extend(matches)
+        
+        # Count occurrences
+        theme_counts = Counter(noun_phrases)
+        
+        # Get the most common themes
+        common_themes = [theme for theme, count in theme_counts.most_common(max_themes) 
+                        if len(theme) > 3]  # Filter out very short themes
+        
+        # If we don't have enough themes, extract keywords
+        if len(common_themes) < max_themes:
+            # Extract keywords from text (simplified)
+            words = re.findall(r'\b[a-zA-Z]{4,}\b', text)
+            word_counts = Counter(words)
+            
+            # Add top keywords that aren't already in themes
+            for word, _ in word_counts.most_common(max_themes * 2):
+                if len(common_themes) >= max_themes:
+                    break
+                if word.lower() not in [theme.lower() for theme in common_themes]:
+                    common_themes.append(word)
+        
+        return common_themes[:max_themes]
     
+    except Exception as e:
+        print(f"Error extracting themes: {str(e)}")
+        return ["general"]  # Fallback theme

@@ -8,12 +8,21 @@ PureText AI is an advanced plagiarism checker that uses AI to deeply understand 
 
 ## ✨ Features
 
-- AI-based content understanding
-- Intelligent theme detection
-- Targeted online plagiarism search
-- Detailed feedback and plagiarism reports
-- Modern, animated, user-friendly UI
-- Scalable, modular, and API-ready design
+- FAISS for fast similarity search
+- Google Programmable Search Engine for targeted web searches
+- Scrapy/BeautifulSoup for web scraping
+- Support for multiple document formats (PDF, DOCX, TXT)
+- User-friendly interface with modern design
+- Detailed plagiarism reports and feedback
+- Modular and scalable architecture for future expansion
+- Scalable architecture with API readiness
+
+## 📖 Use Cases
+
+- Educational institutions looking to maintain academic integrity
+- Content creators wanting to ensure originality
+- Businesses needing to verify the authenticity of documents
+- Researchers wanting to check the originality of their work
 
 ---
 
@@ -35,3 +44,4 @@ PureText AI is an advanced plagiarism checker that uses AI to deeply understand 
    ```bash
    git clone https://github.com/syedd07/PureText-AI.git
    cd PureText-AI
+   ```

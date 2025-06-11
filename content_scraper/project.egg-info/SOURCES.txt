@@ -1,0 +1,13 @@
+setup.py
+content_scraper/__init__.py
+content_scraper/items.py
+content_scraper/middlewares.py
+content_scraper/pipelines.py
+content_scraper/settings.py
+content_scraper/spiders/__init__.py
+content_scraper/spiders/content_spider.py
+project.egg-info/PKG-INFO
+project.egg-info/SOURCES.txt
+project.egg-info/dependency_links.txt
+project.egg-info/entry_points.txt
+project.egg-info/top_level.txt
