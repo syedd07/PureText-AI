@@ -1,4 +1,6 @@
 from typing import List, Dict, Any, Set, Tuple
+import numpy as np
+# import faiss
 import re
 import asyncio
 
